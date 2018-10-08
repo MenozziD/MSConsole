@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/app_bar_main">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="100">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="90">
+
+
+        <LinearLayout
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_column="0"
+            android:layout_row="2"
+            android:orientation="horizontal"
+            android:weightSum="100">
+
+            <TextView
+                android:id="@+id/lNoteRow"
+                android:layout_width="0dip"
+                android:layout_weight="10"
+                android:layout_height="wrap_content"
+                android:background="#eeeeee"
+                android:layout_gravity="top"
+                android:gravity="center_horizontal"
+                android:textSize="18dp"
+                android:text="1" />
+
+            <EditText
+                android:id="@+id/tNoteIn"
+                android:layout_width="0dip"
+                android:layout_weight="90"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:layout_gravity="left|top"
+                android:inputType="textMultiLine"
+                android:textSize="18dp" />
+
+
+        </LinearLayout>
+
+
+
+
+
+    </ScrollView>
+
+
+
+
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="10"
+        android:rowCount="0"
+        android:columnCount="10">
+
+
+    </GridLayout>
+
+    </LinearLayout>
+
+
+
+</android.support.constraint.ConstraintLayout>

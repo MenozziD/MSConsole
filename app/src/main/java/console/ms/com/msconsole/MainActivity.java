@@ -1,8 +1,15 @@
 package console.ms.com.msconsole;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.text.Editable;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,10 +19,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.Arrays;
+import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+
+    /* NOTE */
+    private EditText tNoteIn;
+    private EditText tNoteName;
+
+
+    /* NOTE */
+    public EditText gettNoteIn() {return tNoteIn; }
+    public EditText gettNoteName(){return tNoteName; }
 
     private DrawerLayout drawer;
 
@@ -34,6 +60,107 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        /* EDITOR */
+
+        final TextView lNoteRow=findViewById(R.id.lNoteRow);
+        tNoteIn=findViewById(R.id.tNoteIn);
+        String text = "<i>This is <font color='red'>red</font>. This is <font color='blue'>blue</font>.</i>";
+        tNoteIn.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+        tNoteIn.addTextChangedListener(new TextWatcher() {
+
+            private int oldLen=0;
+            /*  Flag modifiche per evitare loop infinito
+             *   vedi: https://developer.android.com/reference/android/text/TextWatcher#afterTextChanged(android.text.Editable)
+             */
+            private boolean modify=false;
+            private int textCurPosition=0;
+            private int textStartLen=0;
+
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                textCurPosition=tNoteIn.getSelectionStart();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                int lines = tNoteIn.getLineCount();
+                String tlines = "";
+                for( int x= 1; x<= lines; x++ ) { tlines=tlines + x + "\n"; }
+                lNoteRow.setText(tlines);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (tNoteIn.getText().length() != oldLen && modify==false)
+                {
+
+                    modify=true;
+
+
+                    String text=tNoteIn.getText().toString();
+                    List<String> myArrayList = Arrays.asList(getResources().getStringArray(R.array.sh_reserved_words));
+
+                    if (tNoteIn.length()>0) {
+
+                        //Per le parole chiave
+                        for (int x = 0; x <= myArrayList.size() - 1; x++) {
+                            text = text.replace(myArrayList.get(x).toString(), "<strong>" + "<font color='green'>" + myArrayList.get(x).toString() + "</font>" + "</strong>");
+                        }
+                        //Per le stringhe
+                        /*
+                        int chrCount=0;
+
+                        for (int y=0;y<=text.length()-1;y++)
+                        {
+                            if (text.charAt(y)=='\"')
+                            {
+                                chrCount=chrCount+1;
+                                if (chrCount % 2 != 0)
+                                    text=text.subSequence(0,y).toString()+"<font color='red'><u>"+text.subSequence(y,text.length()-1).toString();
+                                else
+                                    text=text.subSequence(0,y).toString()+"</font></u>"+text.subSequence(y,text.length()-1).toString();
+
+                            }
+                        }
+                        */
+                        //if (text.indexOf("\"") > 0 && text.indexOf("\"", text.indexOf("\"")) > 0)
+                            //text.replace(text.subSequence(text.indexOf("\""), text.indexOf("\"", text.indexOf("\""))).toString(), "<u>" + text.subSequence(text.indexOf("\""), text.indexOf("\"", text.indexOf("\""))).toString() + "</u>");
+                        //Per i commenti
+                        text = text.replace("#", "<i><font color='grey'>#");
+                        //Per il ritorno a capo
+                        text = text.replace("\n", "\n</font></i><br>");
+                        oldLen = tNoteIn.getText().length();
+                        tNoteIn.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+
+                        //Rialloco Cursore
+                        try {
+                            if (textCurPosition < tNoteIn.length()) {
+                                if (tNoteIn.getText().charAt(textCurPosition) == '\n' && tNoteIn.getText().charAt(textCurPosition - 1) != '\n')
+                                    tNoteIn.setSelection(textCurPosition + 1);
+                                else
+                                    tNoteIn.setSelection(textCurPosition);
+                            }
+                            else
+                                tNoteIn.setSelection(textCurPosition);
+                        }catch (Exception exc) {
+                            tNoteIn.setSelection(textCurPosition);
+                            System.out.println(exc);
+                        }
+                    }
+                    else
+                        tNoteIn.setText("");
+
+                    modify=false;
+                }
+
+            }
+        });
+
+
+
     }
 
     @Override
@@ -90,4 +217,7 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
 }
+
