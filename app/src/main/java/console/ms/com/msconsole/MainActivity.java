@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity
              */
             private boolean modify=false;
             private int textCurPosition=0;
-            private int textStartLen=0;
+            private int apixCount=0;
 
 
             @Override
@@ -94,64 +94,64 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void afterTextChanged(Editable s) {
+
+                String text=tNoteIn.getText().toString();
+
                 if (tNoteIn.getText().length() != oldLen && modify==false)
                 {
-
                     modify=true;
-
-
-                    String text=tNoteIn.getText().toString();
+                    //text=tNoteIn.getText().toString();
                     List<String> myArrayList = Arrays.asList(getResources().getStringArray(R.array.sh_reserved_words));
 
-                    if (tNoteIn.length()>0) {
+                    try {
+                        if (text.length()>0) {
 
-                        //Per le parole chiave
-                        for (int x = 0; x <= myArrayList.size() - 1; x++) {
-                            text = text.replace(myArrayList.get(x).toString(), "<strong>" + "<font color='green'>" + myArrayList.get(x).toString() + "</font>" + "</strong>");
-                        }
-                        //Per le stringhe
-                        /*
-                        int chrCount=0;
-
-                        for (int y=0;y<=text.length()-1;y++)
-                        {
-                            if (text.charAt(y)=='\"')
-                            {
-                                chrCount=chrCount+1;
-                                if (chrCount % 2 != 0)
-                                    text=text.subSequence(0,y).toString()+"<font color='red'><u>"+text.subSequence(y,text.length()-1).toString();
-                                else
-                                    text=text.subSequence(0,y).toString()+"</font></u>"+text.subSequence(y,text.length()-1).toString();
-
+                            //Per le stringhe
+                            apixCount=0;
+                            int len=text.length()-1;
+                            for (int y=0;y<len;y++){
+                                if (text.charAt(y)=='\"') {
+                                    String pre=text.substring(0,y);
+                                    System.out.println(pre);
+                                    String post=text.substring(y);
+                                    System.out.println(text.substring(y));
+                                    apixCount=apixCount+1;
+                                    if (apixCount % 2 != 0)
+                                        text=pre+"<font color='red'><u>"+post;
+                                    else
+                                        text=pre+"</font></u>"+post;
+                                }
                             }
+
+                            //Per le parole chiave
+                            for (int x = 0; x <= myArrayList.size() - 1; x++) {
+                                text = text.replace(myArrayList.get(x).toString(), "<strong>" + "<font color='green'>" + myArrayList.get(x).toString() + "</font>" + "</strong>");
+                            }
+
+                            //Per i commenti
+                            text = text.replace("#", "<i><font color='grey'>#");
+
+                            //Per il ritorno a capo
+                            text = text.replace("\n", "\n</font></i><br>");
                         }
-                        */
-                        //if (text.indexOf("\"") > 0 && text.indexOf("\"", text.indexOf("\"")) > 0)
-                            //text.replace(text.subSequence(text.indexOf("\""), text.indexOf("\"", text.indexOf("\""))).toString(), "<u>" + text.subSequence(text.indexOf("\""), text.indexOf("\"", text.indexOf("\""))).toString() + "</u>");
-                        //Per i commenti
-                        text = text.replace("#", "<i><font color='grey'>#");
-                        //Per il ritorno a capo
-                        text = text.replace("\n", "\n</font></i><br>");
-                        oldLen = tNoteIn.getText().length();
+
                         tNoteIn.setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
+                        oldLen = tNoteIn.getText().length();
 
                         //Rialloco Cursore
-                        try {
-                            if (textCurPosition < tNoteIn.length()) {
-                                if (tNoteIn.getText().charAt(textCurPosition) == '\n' && tNoteIn.getText().charAt(textCurPosition - 1) != '\n')
-                                    tNoteIn.setSelection(textCurPosition + 1);
-                                else
-                                    tNoteIn.setSelection(textCurPosition);
-                            }
+                        if (textCurPosition < tNoteIn.length()) {
+                            if (tNoteIn.getText().charAt(textCurPosition) == '\n' && tNoteIn.getText().charAt(textCurPosition - 1) != '\n')
+                                tNoteIn.setSelection(textCurPosition + 1);
                             else
                                 tNoteIn.setSelection(textCurPosition);
-                        }catch (Exception exc) {
-                            tNoteIn.setSelection(textCurPosition);
-                            System.out.println(exc);
                         }
+                        else
+                            tNoteIn.setSelection(textCurPosition);
+
+                    }catch (Exception exc) {
+                        tNoteIn.setSelection(textCurPosition);
+                        System.out.println(exc);
                     }
-                    else
-                        tNoteIn.setText("");
 
                     modify=false;
                 }
