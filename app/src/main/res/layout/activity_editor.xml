@@ -34,7 +34,7 @@
                     android:layout_gravity="top"
                     android:gravity="center_horizontal"
                     android:textSize="18dp"
-                    android:text="1" />
+                    android:text="1\n" />
 
                 <EditText
                     android:id="@+id/tNoteIn"

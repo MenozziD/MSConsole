@@ -1,118 +1,154 @@
 package console.ms.com.msconsole;
 
-import android.support.annotation.IntRange;
 import android.text.Editable;
 import android.text.Html;
-import android.text.SpannedString;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
-
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class AscoltatoreEditor implements View.OnClickListener, TextWatcher {
 
-    private int oldLen;
+
     /*  Flag modifiche per evitare loop infinito
      *   vedi: https://developer.android.com/reference/android/text/TextWatcher#afterTextChanged(android.text.Editable)
      */
+    private int oldLen;
     private boolean modify;
-    private int textCurPosition;
-    private int apixCount;
     private MainActivity activity;
+    private boolean fCommento;
+    private boolean fStringa;
 
     AscoltatoreEditor(MainActivity activity){
         this.activity = activity;
-        apixCount = 0;
-        textCurPosition = 0;
-        modify = false;
         oldLen = 0;
+        modify = false;
+        fCommento = false;
+        fStringa = false;
     }
 
     @Override
     public void onClick(View v) {
-
     }
 
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
     }
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        int lines = activity.gettNoteIn().getLineCount();
-        StringBuilder tlines = new StringBuilder();
-        for(int x = 1; x <= lines; x++) {
-            tlines.append(x).append("\n");
-        }
-        activity.getlNoteRow().setText(tlines.toString());
     }
 
     @Override
     public void afterTextChanged(Editable s) {
+        try {
+            //activity.gettNoteIn().removeTextChangedListener(this);
+            String text = activity.gettNoteIn().getText().toString();
 
-        String text = activity.gettNoteIn().getText().toString();
+            Log.i("IN", Integer.toString(text.length()));
+            if (activity.gettNoteIn().getText().length() != oldLen && !modify)
+            {
+                modify = true;
+                StringBuilder HTMLText= new StringBuilder();
+                for (int i=0;i<text.length();i++) {
 
-        if (activity.gettNoteIn().getText().length() != oldLen && !modify)
-        {
-            try {
-                modify=true;
+                    if (text.charAt(i)=='#' && !fCommento && !fStringa) {
+                        fCommento=true;
+                        HTMLText.append("<font color='grey'><i>");
+                    }
+                    if (text.charAt(i)=='\n' && fCommento) {
+                        HTMLText.append("</i></font>");
+                        fCommento=false;
+                    }
+                    if (text.charAt(i)=='\'' && !fCommento && !fStringa){
+                        HTMLText.append("<font color='red'>");
+                        fStringa=true;
+                    } else {
+                        if (text.charAt(i) == '\'' && !fCommento && fStringa) {
+                            HTMLText.append("</font>");
+                            fStringa = false;
+                        }
+                    }
+                    
+                    HTMLText.append(text.charAt(i));
+                }
+
+                /*
                 List<String> myArrayList = Arrays.asList(activity.getResources().getStringArray(R.array.sh_reserved_words));
                 if (activity.gettNoteIn().getSelectionStart() != 0)
                     textCurPosition = activity.gettNoteIn().getSelectionStart();
                 if (text.length()>0) {
-                    //Per le stringhe
-                    int len=text.length()-1;
-                    for (int y=0;y<len;y++){
-                        if (text.charAt(y)=='\"') {
-                            String pre=text.substring(0,y);
-                            System.out.println(pre);
-                            String post=text.substring(y);
-                            System.out.println(text.substring(y));
-                            apixCount=apixCount+1;
-                            if (apixCount % 2 != 0)
-                                text=pre+"<font color='red'><u>"+post;
-                            else {
-                                text = pre + "</u></font>" + post;
-                            }
+                    Log.i("CHAR", Integer.toString(Character.getNumericValue(text.charAt(textCurPosition - 1))));
+                    if (apiceC && activity.gettNoteIn().getText().toString().charAt(textCurPosition - 1) != '\'' )
+                    {
+                        text = text + "'";
+                        textCurPosition=textCurPosition+1;
+                    }
+                    apiceC=false;
+
+
+                    if (text.charAt(textCurPosition - 1) == '\'') {
+                        if (!apice) {
+                            apice = true;
+                            inizioStringa = textCurPosition - 1;
+                        } else {
+                            apice = false;
+                            //stringhe.add(text.substring(inizioStringa, textCurPosition).replace("\'","&apos;"));
+                            stringhe.add(text.substring(inizioStringa, textCurPosition));
                         }
                     }
-                    apixCount=0;
-
-                    //Per le parole chiave
-                    for (int x = 0; x <= myArrayList.size() - 1; x++) {
-                        text = text.replace(myArrayList.get(x), "<strong>" + "<font color='green'>" + myArrayList.get(x) + "</font>" + "</strong>");
+                    if (text.charAt(textCurPosition - 1) == '#') {
+                        commento = true;
+                        inizioCommento = textCurPosition - 1;
                     }
-
+                    if (text.charAt(textCurPosition - 1) == '\n' && commento){
+                        commento = false;
+                        commenti.add((text.substring(inizioCommento, textCurPosition)));
+                    }
+                    //text = text.replace("\'","&apos;");
+                    for (int i = 0; i < stringhe.size(); i++){
+                        text = text.replace(stringhe.get(i),"<font color='red'>" + stringhe.get(i) + "</font>");
+                    }
                     //Per i commenti
-                    text = text.replace("#", "<i><font color='grey'>#");
-
+                    for (int i = 0; i < commenti.size(); i++){
+                        text = text.replace(commenti.get(i),"<font color='grey'><i>" + commenti.get(i) + "</i></font>");
+                    }
+                    //Parole chiave
+                    for (int x = 0; x <= myArrayList.size() - 1; x++) {
+                        text = text.replace(myArrayList.get(x), "<strong><font color='green'>" + myArrayList.get(x) + "</font></strong>");
+                    }
                     //Per il ritorno a capo
-                    text = text.replace("\n", "</font></i><br>");
-                }
-                SpannedString testo = new SpannedString(Html.fromHtml(text));
-                Log.d("testo", testo.toString());
-                for (int i = 0; i < testo.length(); i++){
-                    Log.d("CHAR", Integer.toString(Character.getNumericValue(testo.charAt(i))));
-                }
-                Log.i("TESTO SIZE", Integer.toString(testo.toString().length()));
-                if (testo.toString().length() != 0) {
-                    activity.gettNoteIn().setText(Html.fromHtml(text), TextView.BufferType.SPANNABLE);
-                    Log.i("CHAR", Integer.toString(Character.getNumericValue(testo.charAt(textCurPosition - 1))));
+                    text = text.replace("\n", "<br>");
+                    Log.i("HTML", text);
+                    activity.gettNoteIn().setText(Html.fromHtml(text));//setText(testo, TextView.BufferType.SPANNABLE);
+                    Log.i("DOPO SET", Integer.toString(activity.gettNoteIn().getText().length()));
                     activity.gettNoteIn().setSelection(textCurPosition);
-                }else {
-                    Log.w("LIMIT LENGTH", Integer.toString(oldLen));
+                    if (oldLineCount != activity.gettNoteIn().getLineCount()){
+                        String textNumeri = activity.getlNoteRow().getText().toString();
+                        oldLineCount = activity.gettNoteIn().getLineCount();
+                        Log.i("CHAR CHANGE", Integer.toString(Character.getNumericValue(activity.gettNoteIn().getText().toString().charAt(textCurPosition - 1))));
+                        if (activity.gettNoteIn().getText().toString().charAt(textCurPosition - 1) == '\n') {
+                            indiceLine++;
+                            textNumeri = textNumeri + Integer.toString(indiceLine) + "\n";
+                        } else
+                            textNumeri = textNumeri + "\n";
+                        activity.getlNoteRow().setText(textNumeri);
+                    }
                 }
                 oldLen = activity.gettNoteIn().getText().length();
-            }catch (Exception exc) {
-                exc.printStackTrace(System.out);
+                //
+                if(activity.gettNoteIn().getText().toString().charAt(textCurPosition - 1) == '\'')
+                    apiceC=true;
+                */
+                modify = false;
+                //activity.gettNoteIn().addTextChangedListener(this);
             }
-            modify=false;
+        } catch (Exception exc) {
+            exc.printStackTrace(System.out);
         }
     }
 }
+
