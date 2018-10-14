@@ -5,6 +5,8 @@ import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,6 +23,9 @@ public class AscoltatoreEditor implements View.OnClickListener, TextWatcher {
     private MainActivity activity;
     private boolean fCommento;
     private boolean fStringa;
+    private boolean fAlreadyAppend;
+    private int textCurPosition;
+
 
     AscoltatoreEditor(MainActivity activity){
         this.activity = activity;
@@ -28,6 +33,7 @@ public class AscoltatoreEditor implements View.OnClickListener, TextWatcher {
         modify = false;
         fCommento = false;
         fStringa = false;
+        fAlreadyAppend=false;
     }
 
     @Override
@@ -45,10 +51,13 @@ public class AscoltatoreEditor implements View.OnClickListener, TextWatcher {
     @Override
     public void afterTextChanged(Editable s) {
         try {
-            //activity.gettNoteIn().removeTextChangedListener(this);
             String text = activity.gettNoteIn().getText().toString();
+            //Salvo posizione cursore
+            if (activity.gettNoteIn().getSelectionStart() != 0)
+                textCurPosition = activity.gettNoteIn().getSelectionStart();
 
-            Log.i("IN", Integer.toString(text.length()));
+
+            //Log.i("IN", Integer.toString(text.length()));
             if (activity.gettNoteIn().getText().length() != oldLen && !modify)
             {
                 modify = true;
@@ -64,18 +73,36 @@ public class AscoltatoreEditor implements View.OnClickListener, TextWatcher {
                         fCommento=false;
                     }
                     if (text.charAt(i)=='\'' && !fCommento && !fStringa){
-                        HTMLText.append("<font color='red'>");
+                        HTMLText.append("<font color='red'> &apos;");
+                        fAlreadyAppend=true;
                         fStringa=true;
                     } else {
                         if (text.charAt(i) == '\'' && !fCommento && fStringa) {
-                            HTMLText.append("</font>");
+                            HTMLText.append("&apos; </font>");
                             fStringa = false;
+                            fAlreadyAppend=true;
                         }
                     }
-                    
-                    HTMLText.append(text.charAt(i));
+
+                    if (!fAlreadyAppend) {
+                        if (text.charAt(i)!=' ')
+                            HTMLText.append(text.charAt(i));
+                        else
+                            HTMLText.append("&nbsp;");
+
+                    }
+                    fAlreadyAppend=false;
+
                 }
 
+
+                activity.gettNoteIn().setText(Html.fromHtml(HTMLText.toString()), TextView.BufferType.SPANNABLE);//setText(testo, TextView.BufferType.SPANNABLE);
+
+
+                Log.i("HTML", HTMLText.toString());
+                activity.gettNoteIn().setSelection(textCurPosition);
+                modify = false;
+                //text = text.replace("\'","&apos;");
                 /*
                 List<String> myArrayList = Arrays.asList(activity.getResources().getStringArray(R.array.sh_reserved_words));
                 if (activity.gettNoteIn().getSelectionStart() != 0)
@@ -143,7 +170,7 @@ public class AscoltatoreEditor implements View.OnClickListener, TextWatcher {
                 if(activity.gettNoteIn().getText().toString().charAt(textCurPosition - 1) == '\'')
                     apiceC=true;
                 */
-                modify = false;
+
                 //activity.gettNoteIn().addTextChangedListener(this);
             }
         } catch (Exception exc) {
